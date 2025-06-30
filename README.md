@@ -47,7 +47,7 @@ Select `SMTP` and fill in your real email info:
 | Password  | `your-app-password`     |
 | Host      | `smtp.gmail.com`        |
 | Port      | `465`                   |
-| Secure    | `true`                  |
+| SLS/TLS   | `true / checked`        |
 
 → Name this credential: **n8n Test Mail**
 
