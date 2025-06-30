@@ -1,0 +1,340 @@
+{
+  "name": "Video Notes Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const url = $json.url || $json.body.url;\nconst match = url.match(/[?&]v=([^&]+)/);\nreturn { videoId: match ? match[1] : null };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        360
+      ],
+      "id": "90dd127d-41b9-406b-bd08-e44390c5d74b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:8000/transcript?v={{ $('Code').item.json.videoId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        220
+      ],
+      "id": "44cf5e5a-939e-4b18-b16b-55ae79fe7ab4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Give me a summary of this YouTube transcript: {{$json[\"transcript\"]}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        220
+      ],
+      "id": "825e1b8c-e7a5-4a9d-b31b-46c961e45333",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        360
+      ],
+      "id": "5919a8df-2fcb-4d40-b0a1-1d2e3589538f",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "n8ntestmail.6@gmail.com",
+        "toEmail": "n8ntestmail.6@gmail.com",
+        "subject": "={{ $('Webhook1').item.json.body.url }}",
+        "emailFormat": "text",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1980,
+        220
+      ],
+      "id": "a5d2b342-24c5-4a0a-90ab-6e1a6216cca6",
+      "name": "Send Email",
+      "webhookId": "378cd67b-6964-4d65-9842-ba3f16066687",
+      "credentials": {
+        "smtp": {
+          "id": "7w3Vn5vquj2wKeBs",
+          "name": "n8n Test Mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/youtube",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        280,
+        360
+      ],
+      "id": "1487ee07-19e7-4b33-b392-48f009f731fd",
+      "name": "Webhook1",
+      "webhookId": "464845b5-e2c0-4e40-a0e0-771ce27d2838"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0243afa-bafc-4a90-9757-ba5a4381eff3",
+              "leftValue": "={{$json}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        940,
+        360
+      ],
+      "id": "ce75d69e-f889-417d-9327-cbeb70bf5a43",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT video_id, summarized_at \nFROM summarized_videos \nWHERE video_id = '{{ $json[\"videoId\"] }}' \nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        360
+      ],
+      "id": "dbe3507f-b94a-4712-b8f5-1d6668da2ca0",
+      "name": "Postgres1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "9JETYTBT6FWTWNSU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO summarized_videos (video_id, summarized_at)\nVALUES ('{{ $('Code').item.json.videoId }}', NOW())\nON CONFLICT (video_id) DO NOTHING;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        220
+      ],
+      "id": "cf2cc6ca-85e1-4065-9bab-c2125b9c74ea",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "9JETYTBT6FWTWNSU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "n8ntestmail.6@gmail.com",
+        "toEmail": "n8ntestmail.6@gmail.com",
+        "subject": "=Already summarized: {{ $('Code').item.json.videoId }}",
+        "emailFormat": "text",
+        "text": "=The video you submitted has already been summarized.\n\n▶️ YouTube Link: https://www.youtube.com/watch?v={{ $('Code').item.json.videoId }}\n\n🕒 Summarized At: {{ $json.summarized_at }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1160,
+        500
+      ],
+      "id": "a930c100-a9e4-4395-bf89-c428f47afb2d",
+      "name": "Send Email1",
+      "webhookId": "80377ffb-bce5-4c2f-aecf-7d6c5a296d49",
+      "credentials": {
+        "smtp": {
+          "id": "7w3Vn5vquj2wKeBs",
+          "name": "n8n Test Mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Reset Postgres:\n**1.) Go to docker terminal**\n\n**2.) Enter this:**\ndocker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d n8n\n\n**3.) When you see \"n8n=#\", paste this:**\nTRUNCATE TABLE summarized_videos;\n\n**Double Click To Copy**",
+        "height": 260,
+        "width": 360,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        620
+      ],
+      "id": "bef46ea5-16bf-45ee-bd3d-416c153d2691",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Postgres1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a923af5b-9470-4452-a1d8-b4d7dc349a52",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "CskwpwNE6ifCTiMJ",
+  "tags": []
+}
