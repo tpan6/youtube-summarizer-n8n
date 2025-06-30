@@ -10,6 +10,7 @@ cp .env.example .env               # put real passwords here
 docker compose up -d               # starts Postgres, n8n, Ollama
 n8n import:workflow --input=workflow/youtube-summarizer.json
 open http://localhost:5678         # n8n editor
+```
 
 ### First-time setup
 1. Open n8n at http://localhost:5678  
