@@ -22,6 +22,7 @@ open http://localhost:5678
 2. Go to `Settings → Credentials → New Credential`
 
 ### 🔌 Postgres
+[n8n Postgres credential docs](https://docs.n8n.io/integrations/builtin/credentials/postgres/)
 
 Select `Postgres` and fill in:
 
@@ -31,11 +32,12 @@ Select `Postgres` and fill in:
 | Port      | `5432`       |
 | Database  | `n8n`        |
 | User      | `root`       |
-| Password  | `postgres`   |
+| Password  | `CHANGE_ME`   |
 
 → Name this credential: **Postgres account**
 
 ### ✉️ SMTP Email
+[n8n Send Email credential docs](https://docs.n8n.io/integrations/builtin/credentials/sendemail/)
 
 Select `SMTP` and fill in your real email info:
 
@@ -57,12 +59,12 @@ Select `SMTP` and fill in your real email info:
 |--------------------------|---------------------------------------|
 | `workflow/`              | Contains the `youtube-summarizer.json` workflow |
 | `Transcript/`            | Python API server for transcript fetching |
-| `Chrome Extension Fetch/`| Optional browser shortcut tool         |
+| `Chrome Extension Fetch/`| Browser fetch tool         |
 | `docker-compose.yml`     | Sets up Postgres, Ollama, and n8n      |
 
 ---
 
-## 🧩 Optional: Chrome Extension
+## 🧩 Chrome Extension
 
 To quickly trigger the summarizer:
 
@@ -75,7 +77,7 @@ To quickly trigger the summarizer:
 
 ## 🧠 How It Works
 
-1. User submits a YouTube link via webhook or Chrome extension
+1. User submits a YouTube link via Chrome extension webhook
 2. Backend fetches transcript via `/transcript`
 3. Transcript sent to Ollama (via n8n)
 4. AI summarizes content
@@ -94,15 +96,6 @@ curl -X POST http://localhost:5678/webhook/youtube \
   -H "Content-Type: application/json" \
   -d '{"url":"https://www.youtube.com/watch?v=VIDEO_ID"}'
 ```
-
----
-
-## ✅ To-Do
-
-- [ ] Add front-end trigger UI
-- [ ] Add LLM model selection support
-- [ ] Add transcript caching for reusability
-
 ---
 
 ## 🤝 Credits
