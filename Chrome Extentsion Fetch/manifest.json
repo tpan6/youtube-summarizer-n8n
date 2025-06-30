@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube n8n Webhook Sender",
+  "version": "1.0",
+  "description": "Sends YouTube video URLs to an n8n webhook when opened.",
+  "permissions": ["tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ]
+}
