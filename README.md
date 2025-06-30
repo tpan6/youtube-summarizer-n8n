@@ -88,17 +88,6 @@ To quickly trigger the summarizer:
 
 ---
 
-## 🧪 Example
-
-Try with:
-
-```bash
-curl -X POST http://localhost:5678/webhook/youtube \
-  -H "Content-Type: application/json" \
-  -d '{"url":"https://www.youtube.com/watch?v=VIDEO_ID"}'
-```
----
-
 ## 🤝 Credits
 
 Built with:
