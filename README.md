@@ -1,133 +1,114 @@
-# 🎥 YouTube Summarizer – n8n Workflow
+# 🎥 YouTube Summarizer — n8n Workflow
 
-A local, automated pipeline using:
+> One-click local stack: YouTube → Transcript API → Ollama summary → Email.
 
-- 🔗 YouTube link (via webhook or Chrome extension)
-- 📄 Transcript extraction (via local API)
-- 🧠 LLM-based summarization (Ollama)
-- 📧 Email delivery
-- 🛢️ Postgres memory (avoid duplicates)
-
----
-
-## 🚀 Quick Start
+## ⚡ Quick Start
 
 ```bash
 git clone https://github.com/you/youtube-summarizer-n8n.git
 cd youtube-summarizer-n8n
 
-cp .env.example .env        # Replace placeholders with your credentials
-
-docker compose up -d        # Starts Postgres, n8n, and Ollama
+docker compose up -d
 n8n import:workflow --input=workflow/youtube-summarizer.json
 
-open http://localhost:5678  # Open n8n editor
+open http://localhost:5678
 ```
 
 ---
 
-## 🧠 First-Time Setup
+## 🛠 First-Time Setup in n8n
 
-### 1. Open n8n at `http://localhost:5678`
+1. Open [n8n](http://localhost:5678)
+2. Go to `Settings → Credentials → New Credential`
 
-### 2. Set up Postgres Credential
+### 🔌 Postgres
 
-- Go to **Settings → Credentials → New Credential → Postgres**
-- Fill in:
-  - **Host:** `postgres`
-  - **Port:** `5432`
-  - **Database:** `n8n`
-  - **User:** `root`
-  - **Password:** from `.env`
+Select `Postgres` and fill in:
 
-- Click **Save & Test**
+| Field     | Value        |
+|-----------|--------------|
+| Host      | `postgres`   |
+| Port      | `5432`       |
+| Database  | `n8n`        |
+| User      | `root`       |
+| Password  | `postgres`   |
 
-### 3. Set up SMTP (Email) Credential
+→ Name this credential: **Postgres account**
 
-- Go to **Settings → Credentials → New Credential → SMTP**
-- Use any test email (e.g., Gmail)
-- Enable "Allow less secure apps" if needed
-- Use `.env` to avoid exposing passwords
+### ✉️ SMTP Email
 
----
+Select `SMTP` and fill in your real email info:
 
-## 🧩 Workflow Overview
+| Field     | Example Value           |
+|-----------|-------------------------|
+| User      | `youremail@gmail.com`   |
+| Password  | `your-app-password`     |
+| Host      | `smtp.gmail.com`        |
+| Port      | `465`                   |
+| Secure    | `true`                  |
 
-| Step | Description |
-|------|-------------|
-| 1 | Trigger: `POST /youtube` (via webhook or Chrome extension) |
-| 2 | Extract video ID from URL |
-| 3 | Check Postgres: Has this video been summarized? |
-| 4a | ✅ If **not summarized**: Fetch transcript → summarize via Ollama → store in DB → send email |
-| 4b | ❌ If **already summarized**: Send reminder email with YouTube URL + timestamp |
+→ Name this credential: **n8n Test Mail**
 
 ---
 
-## 🌐 Chrome Extension (Optional)
+## 📦 Included
 
-Located in `/Chrome Extension Fetch`
-
-- Injects a "Summarize" button into YouTube
-- On click: sends `POST` request to `http://localhost:5678/webhook/youtube`
-- Requires permissions:
-  ```json
-  "permissions": ["activeTab", "scripting"]
-  ```
+| Folder/File              | Purpose                               |
+|--------------------------|---------------------------------------|
+| `workflow/`              | Contains the `youtube-summarizer.json` workflow |
+| `Transcript/`            | Python API server for transcript fetching |
+| `Chrome Extension Fetch/`| Optional browser shortcut tool         |
+| `docker-compose.yml`     | Sets up Postgres, Ollama, and n8n      |
 
 ---
 
-## 📄 Transcript Server
+## 🧩 Optional: Chrome Extension
 
-Folder: `/Transcript`
+To quickly trigger the summarizer:
 
-This Flask API fetches transcripts using [`youtube-transcript-api`](https://github.com/jdepoix/youtube-transcript-api).
+1. Open `chrome://extensions`
+2. Enable **Developer Mode**
+3. Click **Load unpacked**
+4. Select the `Chrome Extension Fetch/` folder
 
-Start manually (if not using Docker Compose):
+---
+
+## 🧠 How It Works
+
+1. User submits a YouTube link via webhook or Chrome extension
+2. Backend fetches transcript via `/transcript`
+3. Transcript sent to Ollama (via n8n)
+4. AI summarizes content
+5. Result is:
+   - Emailed to user
+   - Logged in Postgres (to prevent duplicates)
+
+---
+
+## 🧪 Example
+
+Try with:
+
 ```bash
-cd Transcript
-pip install -r requirements.txt
-python app.py
-```
-
-Accessible at:
-```
-http://localhost:8000/transcript?v=VIDEO_ID
+curl -X POST http://localhost:5678/webhook/youtube \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.youtube.com/watch?v=VIDEO_ID"}'
 ```
 
 ---
 
-## 📦 Folder Structure
+## ✅ To-Do
 
-```
-youtube-summarizer-n8n/
-├── Chrome Extension Fetch/
-├── Transcript/
-├── workflow/
-│   └── youtube-summarizer.json
-├── .env.example
-├── docker-compose.yml
-└── README.md
-```
+- [ ] Add front-end trigger UI
+- [ ] Add LLM model selection support
+- [ ] Add transcript caching for reusability
 
 ---
 
-## ⚙️ Environment Variables
+## 🤝 Credits
 
-`.env` file controls secrets:
+Built with:
 
-```env
-POSTGRES_PASSWORD=your_password
-SMTP_USER=n8ntestmail.6@gmail.com
-SMTP_PASS=your_smtp_password
-RECIPIENT_EMAIL=your_email@example.com
-```
-
----
-
-## 📌 Future Improvements
-
-- Web interface for history viewing
-- User-submitted email input
-- Multi-language support
-- Richer summary (bullets, TL;DR, timestamps)
-- Background task queue
+- [n8n](https://n8n.io/)
+- [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api)
+- [Ollama](https://ollama.com/)
