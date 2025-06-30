@@ -11,6 +11,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
       - POSTGRES_DB=n8n
     volumes:
       - postgres_storage:/var/lib/postgresql/data
