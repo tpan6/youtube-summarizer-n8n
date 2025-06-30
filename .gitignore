@@ -1,0 +1,4 @@
+# n8n credential store
+n8n_data/
+# local env overrides (if you ever add them)
+.env
