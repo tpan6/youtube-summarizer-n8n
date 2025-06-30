@@ -60,6 +60,7 @@ Select `SMTP` and fill in your real email info:
 | `workflow/`              | Contains the `youtube-summarizer.json` workflow |
 | `Transcript/`            | Python API server for transcript fetching |
 | `Chrome Extension Fetch/`| Browser fetch tool         |
+| `Chrome Extension Fetch Test/`| Browser fetch tool for testing        |
 | `docker-compose.yml`     | Sets up Postgres, Ollama, and n8n      |
 
 ---
@@ -71,7 +72,7 @@ To quickly trigger the summarizer:
 1. Open `chrome://extensions`
 2. Enable **Developer Mode**
 3. Click **Load unpacked**
-4. Select the `Chrome Extension Fetch/` folder
+4. Select the `Chrome Extension Fetch/` and `Chrome Extension Fetch Test/` folders
 
 ---
 
